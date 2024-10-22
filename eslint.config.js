@@ -1,9 +1,9 @@
-import { Linter } from 'eslint';
-import typescriptParser from '@typescript-eslint/parser';
-import typescriptPlugin from '@typescript-eslint/eslint-plugin';
-import prettierPlugin from 'eslint-plugin-prettier';
+const { Linter } = require('eslint');
+const typescriptParser = require('@typescript-eslint/parser');
+const typescriptPlugin = require('@typescript-eslint/eslint-plugin');
+const prettierPlugin = require('eslint-plugin-prettier');
 
-export default [
+module.exports = [
     {
         languageOptions: {
             parser: typescriptParser, // @typescript-eslint/parser를 사용
