@@ -22,6 +22,7 @@ model User {
   id             Int       @id @default(autoincrement())
   email          String    @unique
   loginPassword  String
+  userName       String
   user_grade     UserGrade @default(GENERAL)
   createdDate    DateTime  @default(now())
   modifiedDate   DateTime  @updatedAt
