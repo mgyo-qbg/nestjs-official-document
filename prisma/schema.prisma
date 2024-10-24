@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserGrade {
+  ADMIN
+  GENERAL
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  loginPassword  String
+  user_grade     UserGrade @default(GENERAL)
+  createdDate    DateTime  @default(now())
+  modifiedDate   DateTime  @updatedAt
+  deleted        Boolean   @default(false)
+  booksRequested Book[]    @relation("BookRequester") // 1:Many relation with Book
+  booksBorrowed  Book[]    @relation("BookBorrower")   // 1:Many relation with Book
+  userLogs       UserLog[] // 1:Many relation with UserLog
+}
+
+model Book {
+  id            Int      @id @default(autoincrement())
+  isbn          String
+  title         String
+  author        String
+  publisher     String
+  coverImg      String?
+  bookStatus    String
+  requester     User     @relation("BookRequester", fields: [requesterId], references: [id])
+  requesterId   Int
+  borrower      User?    @relation("BookBorrower", fields: [borrowerId], references: [id])
+  borrowerId    Int?
+  createdDate   DateTime @default(now())
+  modifiedDate  DateTime @updatedAt
+  deleted       Boolean  @default(false)
+  bookLogs      BookLog[] // 1:Many relation with BookLog
+}
+
+model BookLog {
+  id            Int      @id @default(autoincrement())
+  work_name     String
+  book          Book     @relation(fields: [bookId], references: [id])
+  bookId        Int
+  createdDate   DateTime @default(now())
+  modifiedDate  DateTime @updatedAt
+  deleted       Boolean  @default(false)
+}
+
+model UserLog {
+  id            Int      @id @default(autoincrement())
+  work_name     String
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+  createdDate   DateTime @default(now())
+  modifiedDate  DateTime @updatedAt
+  deleted       Boolean  @default(false)
+}
