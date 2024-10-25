@@ -41,9 +41,9 @@ model User {
   modified_date   DateTime  @updatedAt // 데이터 수정일
   is_deleted      Boolean   @default(false) // 데이터 삭제 여부
   email           String    @unique // 회원 이메일
-  user_password   String // 회원 비밀번호
-  user_name       String // 회원 이름
-  user_grade      UserGrade @default(GENERAL) // 회원 등급
+  password        String // 회원 비밀번호
+  name            String // 회원 이름
+  grade           UserGrade @default(GENERAL) // 회원 등급
   books_requested Book[]    @relation("BookRequester") // 1:Many relation with Book
   books_borrowed  Book[]    @relation("BookBorrower") // 1:Many relation with Book
   user_logs       UserLog[] @relation("UserWorker") // 1:Many relation with UserLog
