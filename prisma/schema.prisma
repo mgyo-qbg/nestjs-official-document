@@ -18,54 +18,77 @@ enum UserGrade {
   GENERAL
 }
 
+enum BookWorkName {
+  REGISTRATION_BOOK // 최초 도서 등록
+  DELETE_BOOK // 도서 삭제
+  CHANGE_BOOK_STATUS_TO_REQUEST_BUY // 도서 상태값을 구매요청 상태로 변경
+  CHAGNE_BOOK_STATUS_TO_DELIVERING // 도서 상태값을 배송중(구매 완료) 상태로 변경
+  CHANGE_BOOK_STATUS_TO_RENTABLE // 도서 상태값을 대여가능 상태로 변경
+  CHANGE_BOOK_STATUS_TO_UNRENTABLE // 도서 상태값을 대여불가능(대여중) 상태로 변경
+}
+
+enum UserWorkName {
+  SIGN_UP // 회원 가입
+  SIGN_IN // 회원 로그인
+  DELETE_USER // 회원 탈퇴
+  CHANGE_PASSWORD // 회원 비밀번호 변경
+  CHANGE_USER_GRADE // 회원 등급 변경
+}
+
 model User {
-  id             Int       @id @default(autoincrement())
-  email          String    @unique
-  loginPassword  String
-  userName       String
-  user_grade     UserGrade @default(GENERAL)
-  createdDate    DateTime  @default(now())
-  modifiedDate   DateTime  @updatedAt
-  deleted        Boolean   @default(false)
-  booksRequested Book[]    @relation("BookRequester") // 1:Many relation with Book
-  booksBorrowed  Book[]    @relation("BookBorrower")   // 1:Many relation with Book
-  userLogs       UserLog[] // 1:Many relation with UserLog
+  id              Int       @id @default(autoincrement()) // 회원 고유 식별자
+  created_date    DateTime  @default(now()) // 데이터 생성일
+  modified_date   DateTime  @updatedAt // 데이터 수정일
+  is_deleted      Boolean   @default(false) // 데이터 삭제 여부
+  email           String    @unique // 회원 이메일
+  login_password  String // 회원 비밀번호
+  user_name       String // 회원 이름
+  user_grade      UserGrade @default(GENERAL) // 회원 등급
+  books_requested Book[]    @relation("BookRequester") // 1:Many relation with Book
+  books_borrowed  Book[]    @relation("BookBorrower") // 1:Many relation with Book
+  user_logs       UserLog[] @relation("UserWorker") // 1:Many relation with UserLog
+  book_logs         BookLog[] @relation("BookWorker") // 1:Many relation with BookLog
 }
 
 model Book {
-  id            Int      @id @default(autoincrement())
-  isbn          String
-  title         String
-  author        String
-  publisher     String
-  coverImg      String?
-  bookStatus    String
-  requester     User     @relation("BookRequester", fields: [requesterId], references: [id])
-  requesterId   Int
-  borrower      User?    @relation("BookBorrower", fields: [borrowerId], references: [id])
-  borrowerId    Int?
-  createdDate   DateTime @default(now())
-  modifiedDate  DateTime @updatedAt
-  deleted       Boolean  @default(false)
-  bookLogs      BookLog[] // 1:Many relation with BookLog
+  id            Int       @id @default(autoincrement()) // 도서 고유 식별자
+  created_date  DateTime  @default(now()) // 데이터 생성일
+  modified_date DateTime  @updatedAt // 데이터 수정일
+  is_deleted    Boolean   @default(false) // 데이터 삭제 여부
+  isbn          String // 국제표준도서번호
+  title         String // 도서 제목
+  author        String // 도서 저자
+  publisher     String // 도서 출판사
+  cover_img     String? // 도서 커버 이미지
+  book_status   String // 도서 상태
+  requester     User?      @relation("BookRequester", fields: [requester_id], references: [id])
+  requester_id  Int? // 도서 구매요청 회원 고유 식별자
+  borrower      User?     @relation("BookBorrower", fields: [borrower_id], references: [id])
+  borrower_id   Int? // 도서 대여 회원 고유 식별자
+  book_logs     BookLog[] // 1:Many relation with BookLog
 }
 
 model BookLog {
-  id            Int      @id @default(autoincrement())
-  work_name     String
-  book          Book     @relation(fields: [bookId], references: [id])
-  bookId        Int
-  createdDate   DateTime @default(now())
-  modifiedDate  DateTime @updatedAt
-  deleted       Boolean  @default(false)
+  id            Int          @id @default(autoincrement()) // 도서 관련 작업 로그 고유 식별자
+  created_date  DateTime     @default(now()) // 데이터 생성일
+  modified_date DateTime     @updatedAt // 데이터 수정일
+  is_deleted    Boolean      @default(false) // 데이터 삭제 여부
+  work_name     BookWorkName // 도서 관련 작업명
+  book          Book         @relation(fields: [book_id], references: [id])
+  book_id       Int // 도서 고유 식별자
+  worker        User         @relation("BookWorker", fields: [worker_id], references: [id])
+  worker_id     Int // 작업자(회원) 고유 식별자
 }
 
 model UserLog {
-  id            Int      @id @default(autoincrement())
-  work_name     String
-  user          User     @relation(fields: [userId], references: [id])
-  userId        Int
-  createdDate   DateTime @default(now())
-  modifiedDate  DateTime @updatedAt
-  deleted       Boolean  @default(false)
+  id            Int          @id @default(autoincrement()) // 회원 관련 작업 로그 고유 식별자
+  created_date  DateTime     @default(now()) // 데이터 생성일
+  modified_date DateTime     @updatedAt // 데이터 수정일
+  is_deleted    Boolean      @default(false) // 데이터 삭제 여부
+  work_name     UserWorkName // 회원 관련 작업명
+  worker        User         @relation("UserWorker", fields: [worker_id], references: [id])
+  worker_id     Int // 작업자(회원) 고유 식별자
+
+  // 대여 목록 리스트 테이블 추가
+
 }
