@@ -1,0 +1,43 @@
+services:
+  db:
+    # MySQL 8.0 이미지를 사용하여 db 서비스 생성
+    image: mysql:8.0
+
+    # 컨테이너 이름을 'db-mysql'로 지정하여 컨테이너 관리 편의성을 높임
+    container_name: db-mysql
+
+    # MySQL 환경 변수 설정
+    environment:
+      # MySQL 루트 계정 비밀번호를 설정 (루트 계정은 MySQL 데이터베이스의 최고 권한을 가짐)
+      MYSQL_ROOT_PASSWORD: password
+
+      # 새로 생성할 MySQL 사용자의 이름을 'mysql'로 지정
+      MYSQL_USER: mysql
+
+      # 'mysql' 사용자의 비밀번호를 'password'로 설정
+      MYSQL_PASSWORD: password
+
+      # 생성할 기본 데이터베이스 이름을 'betterday_db'로 설정 (컨테이너 시작 시 자동 생성됨)
+      MYSQL_DATABASE: betterday_db
+
+      # MySQL 클라이언트와 연결 시 공개 키 인증을 허용하도록 설정
+      MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL: "true"
+
+    # MySQL 컨테이너의 포트를 호스트의 3306 포트와 매핑 (3306 포트는 MySQL의 기본 포트)
+    ports:
+      - 3306:3306
+
+    # MySQL 데이터 파일 및 초기 설정 파일의 볼륨 설정
+    volumes:
+      # 'betterBlogMysql' 볼륨을 컨테이너의 /var/lib/mysql 디렉토리에 연결하여 MySQL 데이터 영구 저장소로 사용
+      - betterBlogMysql:/var/lib/mysql
+
+      # 로컬의 setup_db.sql 파일을 컨테이너 내부의 초기 설정 디렉토리에 복사하여 초기 데이터베이스 설정을 실행
+      - ./database/setup_db.sql:/docker-entrypoint-initdb.d/setup_db.sql
+
+    # 컨테이너가 비정상적으로 종료될 경우 자동 재시작
+    restart: always
+
+# MySQL 데이터가 영구 저장되도록 'betterBlogMysql'이라는 이름의 Docker 볼륨 정의
+volumes:
+  betterBlogMysql:
