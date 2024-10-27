@@ -35,6 +35,19 @@ enum UserWorkName {
   CHANGE_USER_GRADE // 회원 등급 변경
 }
 
+enum BookCategory {
+  FINANCE_AND_INVESTMENT // 금융 및 투자
+  MANDATORY_READING // 필독
+  INDUSTRY_AND_ECONOMY_FORECAST // 연계 산업 경제 전망
+  DATA_ANALYSIS_AND_PROGRAMMING // 데이터 분석 및 프로그래밍
+  BUSINESS_MANAGEMENT_STRATEGY // 기업 경영 전략
+  PROFESSIONAL_SKILL_DEVELOPMENT // 업무 역량 강화
+  PLANNING // 기획
+  UI_UX_COMMUNICATION_COPYWRITING // UI UX 커뮤니케이션 및 카피라이팅
+  CONTENT_CREATION_AND_MARKETING // 콘텐츠 제작 및 마케팅
+  HUMANITIES_AND_CULTURE // 인문학 및 교양
+}
+
 model User {
   id              Int          @id @default(autoincrement()) // 회원 고유 식별자
   created_date    DateTime     @default(now()) // 데이터 생성일
@@ -68,7 +81,7 @@ model Book {
   borrower_id   Int? // 도서 대여 회원 고유 식별자
   book_logs     BookLog[]    @relation("BookId") // 1:Many relation with BookLog
   rental_lists  RentalHistory[] @relation("RentalBook") // 1:Many relation with RentalHistory
-  // 도서 분야 필드 추가 예정
+  book_category BookCategory // 도서 분야
 }
 
 model BookLog {
