@@ -1,0 +1,8 @@
+/*
+  Warnings:
+
+  - Added the required column `book_category` to the `Book` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `Book` ADD COLUMN `book_category` ENUM('FINANCE_AND_INVESTMENT', 'MANDATORY_READING', 'INDUSTRY_AND_ECONOMY_FORECAST', 'DATA_ANALYSIS_AND_PROGRAMMING', 'BUSINESS_MANAGEMENT_STRATEGY', 'PROFESSIONAL_SKILL_DEVELOPMENT', 'PLANNING', 'UI_UX_COMMUNICATION_COPYWRITING', 'CONTENT_CREATION_AND_MARKETING', 'HUMANITIES_AND_CULTURE') NOT NULL;
