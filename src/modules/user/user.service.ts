@@ -1,11 +1,18 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, User, UserWorkName } from '@prisma/client';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { SignupResponseDto } from './dto/signupResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UserLogService } from '../user-log/user-log.service';
 import * as bcrypt from 'bcrypt';
 import { FindAllResponseDto } from './dto/findAllResponse.dto';
+import { FindOneResponseDto } from './dto/findOneResponse.dto';
 
 @Injectable()
 export class UserService {
@@ -82,10 +89,27 @@ export class UserService {
     });
   }
 
-  findOne(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
-    return this.model.findUnique({
+  async findOne(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+  ): Promise<FindOneResponseDto> {
+    const user = await this.model.findUnique({
       where: userWhereUniqueInput,
     });
+
+    // 사용자 정보가 없을 경우 NotFoundException (404)을 던짐
+    if (!user) {
+      throw new NotFoundException(
+        `Not found user by id: ${userWhereUniqueInput.id}`,
+      );
+    }
+
+    const findOneResponseDto = new FindOneResponseDto();
+    findOneResponseDto.id = user.id;
+    findOneResponseDto.email = user.email;
+    findOneResponseDto.name = user.name;
+    findOneResponseDto.grade = user.grade;
+
+    return findOneResponseDto;
   }
 
   update(params: {
