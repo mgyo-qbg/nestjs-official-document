@@ -1,14 +1,18 @@
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserWorkName } from '@prisma/client';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { SignupResponseDto } from './dto/signupResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { UserLogService } from '../user-log/user-log.service';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userLogService: UserLogService,
+  ) {}
 
   private readonly model = this.prisma.user;
 
@@ -22,6 +26,9 @@ export class UserService {
           name: true,
         },
       });
+
+      // SIGN_UP 에 대한 UserLog 로그 추가
+      await this.userLogService.InsertUserLog(user.id, UserWorkName.SIGN_UP);
 
       this.logger.log(
         'UserService.create() 메서드에서 쿼리한 user 객체 확인하는 로그입니다.',
