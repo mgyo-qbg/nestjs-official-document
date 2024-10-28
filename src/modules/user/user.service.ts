@@ -4,6 +4,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { SignupResponseDto } from './dto/signupResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UserLogService } from '../user-log/user-log.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -18,8 +19,13 @@ export class UserService {
 
   async create(data: Prisma.UserCreateInput): Promise<SignupResponseDto> {
     try {
+      const hashedPassword = await bcrypt.hash(data.password, 10); // 10은 saltRounds
+
       const user = await this.model.create({
-        data,
+        data: {
+          ...data,
+          password: hashedPassword,
+        },
         select: {
           id: true,
           email: true,
