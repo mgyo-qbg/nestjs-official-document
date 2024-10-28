@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { SignupRequestDto } from './dto/signupRequest.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdatePasswordRequestDto } from './dto/updatePasswordRequestDto';
 
 @Controller('user')
 export class UserController {
@@ -39,10 +39,21 @@ export class UserController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update({
+  updatePassword(
+    @Param('id') id: string,
+    @Body() updatePasswordRequestDto: UpdatePasswordRequestDto,
+  ) {
+    // URL 파라미터인 id 값 로그 출력
+    this.logger.log(`Request User ID: ${id}`);
+
+    // 요청 본문 데이터 로그 출력
+    this.logger.log(
+      `Reqeust Body: ${JSON.stringify(updatePasswordRequestDto)}`,
+    );
+
+    return this.userService.updatePassword({
       where: { id: Number(id) },
-      data: updateUserDto,
+      data: updatePasswordRequestDto,
     });
   }
 

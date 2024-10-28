@@ -1,11 +1,13 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, User, UserWorkName } from '@prisma/client';
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { SignupResponseDto } from './dto/signupResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -13,6 +15,8 @@ import { UserLogService } from '../user-log/user-log.service';
 import * as bcrypt from 'bcrypt';
 import { FindAllResponseDto } from './dto/findAllResponse.dto';
 import { FindOneResponseDto } from './dto/findOneResponse.dto';
+import { UpdatePasswordRequestDto } from './dto/updatePasswordRequestDto';
+import { UpdatePasswordResponseDto } from './dto/updatePasswordResponse.Dto';
 
 @Injectable()
 export class UserService {
@@ -112,11 +116,64 @@ export class UserService {
     return findOneResponseDto;
   }
 
-  update(params: {
-    where: Prisma.UserWhereUniqueInput;
-    data: Prisma.UserUpdateInput;
-  }) {
-    return this.model.update(params);
+  async updatePassword(params: {
+    data: UpdatePasswordRequestDto;
+    where: { id: number };
+  }): Promise<UpdatePasswordResponseDto> {
+    const { data, where } = params;
+
+    // 사용자를 ID로 검색
+    const user = await this.prisma.user.findUnique({
+      where: { id: where.id },
+    });
+    if (!user) {
+      throw new NotFoundException(`Not found user by id: ${where.id}`);
+    }
+    // 현재 비밀번호 검증
+    const isPasswordValid = await bcrypt.compare(
+      data.now_password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    // 새 비밀번호 일치 여부 확인
+    if (data.new_first_password !== data.new_second_password) {
+      throw new BadRequestException('New passwords do not match');
+    }
+
+    // 새 비밀번호와 현재 비밀번호 다를 경우에만 비밀번호 정상 변경
+    if (data.now_password == data.new_first_password) {
+      throw new BadRequestException(
+        'New password cannot be the same as current password',
+      );
+    }
+
+    // 새 비밀번호 해싱
+    const hashedPassword = await bcrypt.hash(data.new_first_password, 10);
+
+    // 비밀번호 업데이트
+    const now_user = await this.prisma.user.update({
+      where: { id: where.id },
+      data: {
+        password: hashedPassword, // 해시된 비밀번호를 저장
+      },
+    });
+
+    // CHANGE_PASSWORD 에 대한 UserLog 로그 추가
+    await this.userLogService.InsertUserLog(
+      where.id,
+      UserWorkName.CHANGE_PASSWORD,
+    );
+
+    const updatePasswordResponseDto = new UpdatePasswordResponseDto();
+    updatePasswordResponseDto.id = now_user.id;
+    updatePasswordResponseDto.email = now_user.email;
+    updatePasswordResponseDto.name = now_user.name;
+    updatePasswordResponseDto.grade = now_user.grade;
+
+    return updatePasswordResponseDto;
   }
 
   remove(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
