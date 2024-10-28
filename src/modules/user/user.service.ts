@@ -1,10 +1,11 @@
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma, UserWorkName } from '@prisma/client';
+import { Prisma, User, UserWorkName } from '@prisma/client';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { SignupResponseDto } from './dto/signupResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UserLogService } from '../user-log/user-log.service';
 import * as bcrypt from 'bcrypt';
+import { AllResponseDto } from './dto/allResponse.dto';
 
 @Injectable()
 export class UserService {
@@ -62,8 +63,23 @@ export class UserService {
     }
   }
 
-  findAll() {
-    return this.model.findMany();
+  async findAll(): Promise<AllResponseDto[]> {
+    const users: User[] = await this.model.findMany();
+
+    // User 데이터를 AllResponseDto 로 변환
+    return users.map((user) => {
+      const allResponseDto = new AllResponseDto();
+      allResponseDto.id = user.id;
+      allResponseDto.email = user.email;
+      allResponseDto.name = user.name;
+      allResponseDto.grade = user.grade;
+
+      this.logger.log(
+        'UserService.findAll() 메서드에서 쿼리하여 반환하는 모든 allResponseDto 확인하는 로그입니다.',
+        JSON.stringify(allResponseDto, null, 2),
+      );
+      return allResponseDto;
+    });
   }
 
   findOne(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
