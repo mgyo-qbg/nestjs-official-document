@@ -5,7 +5,7 @@ import { SignupResponseDto } from './dto/signupResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UserLogService } from '../user-log/user-log.service';
 import * as bcrypt from 'bcrypt';
-import { AllResponseDto } from './dto/allResponse.dto';
+import { FindAllResponseDto } from './dto/findAllResponse.dto';
 
 @Injectable()
 export class UserService {
@@ -63,22 +63,22 @@ export class UserService {
     }
   }
 
-  async findAll(): Promise<AllResponseDto[]> {
+  async findAll(): Promise<FindAllResponseDto[]> {
     const users: User[] = await this.model.findMany();
 
-    // User 데이터를 AllResponseDto 로 변환
+    // User 데이터를 FindAllResponseDto 로 변환
     return users.map((user) => {
-      const allResponseDto = new AllResponseDto();
-      allResponseDto.id = user.id;
-      allResponseDto.email = user.email;
-      allResponseDto.name = user.name;
-      allResponseDto.grade = user.grade;
+      const findAllResponseDto = new FindAllResponseDto();
+      findAllResponseDto.id = user.id;
+      findAllResponseDto.email = user.email;
+      findAllResponseDto.name = user.name;
+      findAllResponseDto.grade = user.grade;
 
       this.logger.log(
-        'UserService.findAll() 메서드에서 쿼리하여 반환하는 모든 allResponseDto 확인하는 로그입니다.',
-        JSON.stringify(allResponseDto, null, 2),
+        'UserService.findAll() 메서드에서 쿼리하여 반환하는 모든 findAllResponseDto 확인하는 로그입니다.',
+        JSON.stringify(findAllResponseDto, null, 2),
       );
-      return allResponseDto;
+      return findAllResponseDto;
     });
   }
 

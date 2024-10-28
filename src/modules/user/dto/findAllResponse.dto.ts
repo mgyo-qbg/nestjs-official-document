@@ -1,6 +1,6 @@
 import { IsEmail, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
-export class AllResponseDto {
+export class FindAllResponseDto {
   @IsNotEmpty()
   @IsInt()
   id: number;
