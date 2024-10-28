@@ -61,7 +61,6 @@ model User {
   books_borrowed  Book[]       @relation("BookBorrower") // 1:Many relation with Book
   user_logs       UserLog[]    @relation("UserWorker") // 1:Many relation with UserLog
   book_logs       BookLog[]    @relation("BookWorker") // 1:Many relation with BookLog
-  rental_lists    RentalHistory[] @relation("RentalUser") // 1:Many relation with RentalHistory
 }
 
 model Book {
@@ -80,7 +79,6 @@ model Book {
   borrower      User?        @relation("BookBorrower", fields: [borrower_id], references: [id])
   borrower_id   Int? // 도서 대여 회원 고유 식별자
   book_logs     BookLog[]    @relation("BookId") // 1:Many relation with BookLog
-  rental_lists  RentalHistory[] @relation("RentalBook") // 1:Many relation with RentalHistory
   book_category BookCategory // 도서 분야
 }
 
@@ -104,15 +102,4 @@ model UserLog {
   work_name     UserWorkName // 회원 관련 작업명
   worker        User         @relation("UserWorker", fields: [worker_id], references: [id])
   worker_id     Int // 작업자(회원) 고유 식별자
-}
-
-model RentalHistory { // 근데 내생각에는 이게 결국 BookLog 에서 book_id 로 필터링 걸어서 조회하는거랑 똑같은 기능을 하는 테이블이라서 필요없을거같음. 고민 한번만 더 해보고 삭제하자.
-  id             Int      @id @default(autoincrement()) // 대여 목록 기록 고유 식별자
-  created_date   DateTime @default(now()) // 데이터 생성일
-  modified_date  DateTime @updatedAt // 데이터 수정일
-  is_deleted     Boolean  @default(false) // 데이터 삭제 여부
-  rental_book    Book     @relation("RentalBook", fields: [rental_book_id], references: [id])
-  rental_book_id Int // 도서 고유 식별자
-  rental_user    User     @relation("RentalUser", fields: [rental_user_id], references: [id])
-  rental_user_id Int // 회원 고유 식별자
 }
