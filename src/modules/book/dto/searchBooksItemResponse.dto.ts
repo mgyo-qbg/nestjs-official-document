@@ -14,5 +14,5 @@ export class SearchBooksItemResponseDto {
   publisher: string;
 
   @IsString()
-  image: string;
+  cover_image: string;
 }
