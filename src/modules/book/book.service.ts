@@ -15,6 +15,8 @@ export class BookService {
     private readonly configService: ConfigService,
   ) {}
 
+  private readonly model = this.prisma.book;
+
   async searchBooks(query: string) {
     const clientId = this.configService.get<string>('NAVER_CLIENT_ID');
     const clientSecret = this.configService.get<string>('NAVER_CLIENT_SECRET');
@@ -33,14 +35,18 @@ export class BookService {
     );
 
     const searchBooksResponseDto = new SearchBooksResponseDto();
-    searchBooksResponseDto.items = response.data.items.map((item) => ({
-      isbn: item.isbn,
-      title: item.title,
-      author: item.author,
-      publisher: item.publisher,
-      image: item.image,
-      description: item.description,
-    }));
+
+    // 각 item을 SearchBooksItemResponseDto로 변환하여 items에 저장
+    searchBooksResponseDto.items = response.data.items.map((item) => {
+      const searchBooksItemResponseDto = new SearchBooksItemResponseDto();
+      searchBooksItemResponseDto.isbn = item.isbn;
+      searchBooksItemResponseDto.title = item.title;
+      searchBooksItemResponseDto.author = item.author;
+      searchBooksItemResponseDto.publisher = item.publisher;
+      searchBooksItemResponseDto.image = item.image;
+
+      return searchBooksItemResponseDto; // 변환된 DTO 반환
+    });
 
     return searchBooksResponseDto;
   }

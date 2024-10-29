@@ -15,7 +15,4 @@ export class SearchBooksItemResponseDto {
 
   @IsString()
   image: string;
-
-  @IsString()
-  description: string;
 }
