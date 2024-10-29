@@ -123,7 +123,7 @@ export class UserService {
     const { data, where } = params;
 
     // 사용자를 ID로 검색
-    const user = await this.prisma.user.findUnique({
+    const user = await this.model.findUnique({
       where: { id: where.id },
     });
     if (!user) {
@@ -154,7 +154,7 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(data.new_first_password, 10);
 
     // 비밀번호 업데이트
-    const now_user = await this.prisma.user.update({
+    const now_user = await this.model.update({
       where: { id: where.id },
       data: {
         password: hashedPassword, // 해시된 비밀번호를 저장
@@ -176,7 +176,7 @@ export class UserService {
     return updatePasswordResponseDto;
   }
 
-  remove(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
+  deleteUser(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
     return this.model.delete({
       where: userWhereUniqueInput,
     });
