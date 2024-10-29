@@ -127,3 +127,11 @@ model BookOrderLog {
   worker        User                 @relation("BookOrderWorker", fields: [worker_id], references: [id])
   worker_id     Int // 작업자(회원) 고유 식별자
 }
+
+model DeletedUser {
+  id           Int      @id @default(autoincrement()) // 삭제된 사용자 고유 식별자
+  email        String   // 회원 이메일
+  name         String   // 회원 이름
+  grade        UserGrade // 회원 등급
+  deleted_at   DateTime @default(now()) // 삭제 일시(DeletedUser 테이블에 데이터가 추가된 시점)
+}
