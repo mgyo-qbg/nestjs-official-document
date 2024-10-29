@@ -25,13 +25,24 @@ export class BookService {
           query: query,
         },
         headers: {
-          'X-Naver-Client-Id': clientId, // 클라이언트 ID 입력
-          'X-Naver-Client-Secret': clientSecret, // 클라이언트 시크릿 입력
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
         },
       }),
     );
 
-    return response.data;
+    // response.data에서 필요한 부분만 추출
+    const searchBooksResponseDto = response.data.items.map((item) => ({
+      isbn: item.isbn,
+      title: item.title,
+      author: item.author,
+      publisher: item.publisher,
+      cover_img: item.cover_img,
+      image: item.image,
+      description: item.description,
+    }));
+
+    return searchBooksResponseDto;
   }
 
   create(createBookDto: CreateBookDto) {

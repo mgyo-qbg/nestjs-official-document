@@ -22,7 +22,7 @@ export class BookController {
 
   @Get('search')
   searchBook(@Query('query') query: string) {
-    this.logger.log(query);
+    this.logger.log('검색 키워드 :', query);
     return this.bookService.searchBooks(query);
   }
 
