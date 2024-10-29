@@ -176,7 +176,7 @@ export class UserService {
     return updatePasswordResponseDto;
   }
 
-  remove(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
+  deleteUser(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
     return this.model.delete({
       where: userWhereUniqueInput,
     });
