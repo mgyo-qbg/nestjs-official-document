@@ -19,7 +19,7 @@ enum UserGrade {
 }
 
 enum BookStatus {
-// 도서 상태
+  // 도서 상태
   REQUEST_BUY // 구매요청
   DELIVERING // 배송중
   ARRIVED // 배송도착
@@ -28,13 +28,13 @@ enum BookStatus {
 }
 
 enum BookRentalLogWorkName {
-// 도서 대여 관련 작업명
+  // 도서 대여 관련 작업명
   CHANGE_BOOK_STATUS_TO_RENTABLE // 대여 가능 상태로 변경
   CHANGE_BOOK_STATUS_TO_UNRENTABLE // 대여 불가능 상태로 변경
 }
 
 enum BookOrderLogWorkName {
-// 도서 주문 관련 작업명
+  // 도서 주문 관련 작업명
   CHANGE_BOOK_STATUS_TO_REQUEST_BUY // 구매요청 상태로 변경
   CHANGE_BOOK_STATUS_TO_DELIVERING // 배송중 상태로 변경
   CHANGE_BOOK_STATUS_TO_ARRIVED // 배송도착 상태로 변경
@@ -94,7 +94,7 @@ model Book {
   borrower_id      Int? // 도서 대여 회원 고유 식별자
   book_rental_logs BookRentalLog[] @relation("BookRentalWhichBook") // 1:Many relation with BookLog
   book_order_logs  BookOrderLog[]  @relation("BookOrderWhichBook") // 1:Many relation with BookLog
-  book_category    BookCategory // 도서 분야
+  book_category    BookCategory    @default(MANDATORY_READING) // 도서 분야
 }
 
 model BookRentalLog {
