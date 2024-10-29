@@ -7,10 +7,12 @@ import {
   Param,
   Delete,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { SignupRequestDto } from './dto/signupRequest.dto';
 import { UpdatePasswordRequestDto } from './dto/updatePasswordRequestDto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -27,6 +29,7 @@ export class UserController {
   }
 
   @Get('all')
+  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.userService.findAll();
   }

@@ -181,4 +181,31 @@ export class UserService {
       where: userWhereUniqueInput,
     });
   }
+
+  async findOneById(userId: number): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    return user;
+  }
+
+  async validateUser(email: string, password: string): Promise<User | null> {
+    // 이메일로 사용자 검색
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // 사용자가 없거나 비밀번호가 일치하지 않으면 null 반환
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // 사용자가 유효하면 사용자 정보 반환
+    return user;
+  }
 }
