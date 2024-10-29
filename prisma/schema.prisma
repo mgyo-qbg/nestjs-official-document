@@ -86,7 +86,7 @@ model Book {
   title            String // 도서 제목
   author           String // 도서 저자
   publisher        String // 도서 출판사
-  cover_img        String? // 도서 커버 이미지
+  cover_image        String? // 도서 커버 이미지
   book_status      BookStatus // 도서 상태
   requester        User?           @relation("BookRequester", fields: [requester_id], references: [id])
   requester_id     Int? // 도서 구매요청 회원 고유 식별자
