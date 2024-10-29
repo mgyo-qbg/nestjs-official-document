@@ -5,6 +5,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SearchBooksResponseDto } from './dto/searchBooksResponse.dto';
 
 @Injectable()
 export class BookService {
@@ -31,13 +32,12 @@ export class BookService {
       }),
     );
 
-    // response.data에서 필요한 부분만 추출
-    const searchBooksResponseDto = response.data.items.map((item) => ({
+    const searchBooksResponseDto = new SearchBooksResponseDto();
+    searchBooksResponseDto.items = response.data.items.map((item) => ({
       isbn: item.isbn,
       title: item.title,
       author: item.author,
       publisher: item.publisher,
-      cover_img: item.cover_img,
       image: item.image,
       description: item.description,
     }));
