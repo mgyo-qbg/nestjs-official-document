@@ -82,11 +82,11 @@ model Book {
   created_date     DateTime        @default(now()) // 데이터 생성일
   modified_date    DateTime        @updatedAt // 데이터 수정일
   is_deleted       Boolean         @default(false) // 데이터 삭제 여부
-  isbn             String // 국제표준도서번호
+  isbn             String          @unique // 국제표준도서번호
   title            String // 도서 제목
   author           String // 도서 저자
   publisher        String // 도서 출판사
-  cover_image        String? // 도서 커버 이미지
+  cover_image      String? // 도서 커버 이미지
   book_status      BookStatus // 도서 상태
   requester        User?           @relation("BookRequester", fields: [requester_id], references: [id])
   requester_id     Int? // 도서 구매요청 회원 고유 식별자
