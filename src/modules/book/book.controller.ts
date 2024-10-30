@@ -54,10 +54,13 @@ export class BookController {
     return this.bookService.findAll();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.bookService.findOne(+id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.bookService.findOne({
+      id: Number(id),
+    });
+  }
+
   //
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {

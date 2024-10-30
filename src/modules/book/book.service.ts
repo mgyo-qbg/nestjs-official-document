@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -13,9 +14,10 @@ import { RegisterBookResponseDto } from './dto/registerBookResponse.dto';
 import { SearchBooksItemResponseDto } from './dto/searchBooksItemResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { BookOrderLogService } from '../book-order-log/book-order-log.service';
-import { Book, BookOrderLogWorkName, User } from '@prisma/client';
+import { Book, BookOrderLogWorkName, Prisma } from '@prisma/client';
 import { UserService } from '../user/user.service';
 import { FindAllResponseDto } from './dto/findAllResponse.dto';
+import { FindOneResponseDto } from './dto/findOneResponse.dto';
 
 @Injectable()
 export class BookService {
@@ -141,15 +143,37 @@ export class BookService {
     return Promise.all(findAllResponseDtos);
   }
 
-  //   async findOne(id
-  // :
-  // // 사용자 세부 정보를 가져와 사용자 이름을 얻기
-  // const requester = await this.userService.findOne({ id: Number(userId) });
-  //   number;
-  // )
-  //   {
-  //     return `This action returns a #${id} book`;
-  //   }
+  async findOne(
+    bookWhereUniqueInput: Prisma.BookWhereUniqueInput,
+  ): Promise<FindOneResponseDto> {
+    const book = await this.model.findUnique({
+      where: bookWhereUniqueInput,
+    });
+
+    // 도서 정보가 없을 경우 NotFoundException (404)을 던짐
+    if (!book) {
+      throw new NotFoundException(
+        `Not found user by id: ${bookWhereUniqueInput.id}`,
+      );
+    }
+    // 사용자 정보 가져오기
+    const requester = await this.userService.findOne({
+      id: Number(book.requester_id),
+    });
+
+    const findOneResponseDto = new FindOneResponseDto();
+    findOneResponseDto.id = book.id;
+    findOneResponseDto.isbn = book.isbn;
+    findOneResponseDto.title = book.title;
+    findOneResponseDto.author = book.author;
+    findOneResponseDto.publisher = book.publisher;
+    findOneResponseDto.cover_image = book.cover_image;
+    findOneResponseDto.book_category = book.book_category;
+    findOneResponseDto.requester_id = book.requester_id;
+    findOneResponseDto.requester_name = requester.name;
+
+    return findOneResponseDto;
+  }
 
   //   update(id
   // :
