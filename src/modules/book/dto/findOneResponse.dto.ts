@@ -30,11 +30,11 @@ export class FindOneResponseDto {
 
   @IsString()
   @IsNotEmpty()
-  requester_id;
+  requester_id: number;
 
   @IsString()
   @IsNotEmpty()
-  requester_name;
+  requester_name: string;
 
   @IsNotEmpty()
   book_status;
