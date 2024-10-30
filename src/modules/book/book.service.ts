@@ -12,6 +12,8 @@ import { RegisterBookRequestDto } from './dto/RegisterBookRequest.dto';
 import { RegisterBookResponseDto } from './dto/RegisterBookResponse.dto';
 import { SearchBooksItemResponseDto } from './dto/searchBooksItemResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { BookOrderLogService } from '../book-order-log/book-order-log.service';
+import { BookOrderLogWorkName } from '@prisma/client';
 
 @Injectable()
 export class BookService {
@@ -19,6 +21,7 @@ export class BookService {
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly bookOrderLogService: BookOrderLogService,
   ) {}
 
   private readonly model = this.prisma.book;
@@ -59,12 +62,14 @@ export class BookService {
 
   async registerBook(
     registerBookRequestDto: RegisterBookRequestDto,
+    userId: number,
   ): Promise<RegisterBookResponseDto> {
     const { isbn, title, author, publisher, cover_image, book_category } =
       registerBookRequestDto;
     try {
       const newBook = await this.model.create({
         data: {
+          requester_id: userId,
           isbn,
           title,
           author,
@@ -74,6 +79,13 @@ export class BookService {
           book_status: 'REQUEST_BUY',
         },
       });
+
+      // CHANGE_BOOK_STATUS_TO_REQUEST_BUY 에 대한 BookOrderLog 로그 추가
+      await this.bookOrderLogService.InsertBookOrderLog(
+        userId,
+        BookOrderLogWorkName.CHANGE_BOOK_STATUS_TO_REQUEST_BUY,
+        newBook.id,
+      );
 
       const registerBookResponseDto = new RegisterBookResponseDto();
       registerBookResponseDto.isbn = newBook.isbn;
