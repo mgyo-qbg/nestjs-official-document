@@ -185,6 +185,19 @@ export class BookService {
     findOneResponseDto.requester_id = book.requester_id;
     findOneResponseDto.requester_name = requester.name;
     findOneResponseDto.book_status = book.book_status;
+    findOneResponseDto.borrower_id = book.borrower_id;
+
+    // 도서 대여자 정보
+    findOneResponseDto.borrower_id = book.borrower_id;
+    // borrower_id가 null인지 확인 및 이름 확인
+    if (book.borrower_id !== null) {
+      const borrower = await this.userService.findOne({
+        id: Number(book.borrower_id),
+      });
+      findOneResponseDto.borrower_name = borrower.name;
+    } else {
+      findOneResponseDto.borrower_name = null;
+    }
 
     return findOneResponseDto;
   }
