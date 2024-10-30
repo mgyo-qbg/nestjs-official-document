@@ -13,14 +13,17 @@ import { UserService } from './user.service';
 import { SignupRequestDto } from './dto/signupRequest.dto';
 import { UpdatePasswordRequestDto } from './dto/updatePasswordRequestDto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Public } from '../auth/public.decorator';
 
 @Controller('user')
+@UseGuards(JwtAuthGuard)
 export class UserController {
   private readonly logger = new Logger(UserService.name);
 
   constructor(private readonly userService: UserService) {}
 
   @Post('signup')
+  @Public()
   signup(@Body() createUserDto: SignupRequestDto) {
     this.logger.log(
       'custom-logger.service 를 이용한 로그가 제대로 남는지 확인하는 테스트 요청입니다. UserController 의 signup 메서드 시작 로그입니다.',
@@ -29,7 +32,6 @@ export class UserController {
   }
 
   @Get('all')
-  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.userService.findAll();
   }

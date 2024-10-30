@@ -2,16 +2,22 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SearchBooksResponseDto } from './dto/searchBooksResponse.dto';
-import { RegisterBookRequestDto } from './dto/RegisterBookRequest.dto';
-import { RegisterBookResponseDto } from './dto/RegisterBookResponse.dto';
+import { RegisterBookRequestDto } from './dto/registerBookRequest.dto';
+import { RegisterBookResponseDto } from './dto/registerBookResponse.dto';
 import { SearchBooksItemResponseDto } from './dto/searchBooksItemResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { BookOrderLogService } from '../book-order-log/book-order-log.service';
+import { Book, BookOrderLogWorkName, Prisma } from '@prisma/client';
+import { UserService } from '../user/user.service';
+import { FindAllResponseDto } from './dto/findAllResponse.dto';
+import { FindOneResponseDto } from './dto/findOneResponse.dto';
 
 @Injectable()
 export class BookService {
@@ -19,6 +25,8 @@ export class BookService {
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly bookOrderLogService: BookOrderLogService,
+    private readonly userService: UserService,
   ) {}
 
   private readonly model = this.prisma.book;
@@ -59,12 +67,14 @@ export class BookService {
 
   async registerBook(
     registerBookRequestDto: RegisterBookRequestDto,
+    userId: number,
   ): Promise<RegisterBookResponseDto> {
     const { isbn, title, author, publisher, cover_image, book_category } =
       registerBookRequestDto;
     try {
       const newBook = await this.model.create({
         data: {
+          requester_id: userId,
           isbn,
           title,
           author,
@@ -74,6 +84,13 @@ export class BookService {
           book_status: 'REQUEST_BUY',
         },
       });
+
+      // CHANGE_BOOK_STATUS_TO_REQUEST_BUY 에 대한 BookOrderLog 로그 추가
+      await this.bookOrderLogService.InsertBookOrderLog(
+        userId,
+        BookOrderLogWorkName.CHANGE_BOOK_STATUS_TO_REQUEST_BUY,
+        newBook.id,
+      );
 
       const registerBookResponseDto = new RegisterBookResponseDto();
       registerBookResponseDto.isbn = newBook.isbn;
@@ -98,19 +115,66 @@ export class BookService {
     }
   }
 
-  //   findAll();
-  //   {
-  //     return `This action returns all book`;
-  //   }
-  //
-  //   findOne(id
-  // :
-  //   number;
-  // )
-  //   {
-  //     return `This action returns a #${id} book`;
-  //   }
-  //
+  async findAll(): Promise<FindAllResponseDto[]> {
+    const books: Book[] = await this.model.findMany();
+
+    // 프로미스 배열 생성
+    const findAllResponseDtos = books.map(async (book) => {
+      const findAllResponseDto = new FindAllResponseDto();
+      findAllResponseDto.id = book.id;
+      findAllResponseDto.isbn = book.isbn;
+      findAllResponseDto.title = book.title;
+      findAllResponseDto.author = book.author;
+      findAllResponseDto.publisher = book.publisher;
+      findAllResponseDto.cover_image = book.cover_image;
+      findAllResponseDto.book_category = book.book_category;
+      findAllResponseDto.requester_id = book.requester_id;
+
+      // 사용자 정보 가져오기
+      const requester = await this.userService.findOne({
+        id: Number(book.requester_id),
+      });
+      findAllResponseDto.requester_name = requester.name;
+
+      return findAllResponseDto;
+    });
+
+    // 모든 프로미스가 해결될 때까지 기다리기
+    return Promise.all(findAllResponseDtos);
+  }
+
+  async findOne(
+    bookWhereUniqueInput: Prisma.BookWhereUniqueInput,
+  ): Promise<FindOneResponseDto> {
+    const book = await this.model.findUnique({
+      where: bookWhereUniqueInput,
+    });
+
+    // 도서 정보가 없을 경우 NotFoundException (404)을 던짐
+    if (!book) {
+      throw new NotFoundException(
+        `Not found user by id: ${bookWhereUniqueInput.id}`,
+      );
+    }
+    // 사용자 정보 가져오기
+    const requester = await this.userService.findOne({
+      id: Number(book.requester_id),
+    });
+
+    const findOneResponseDto = new FindOneResponseDto();
+    findOneResponseDto.id = book.id;
+    findOneResponseDto.isbn = book.isbn;
+    findOneResponseDto.title = book.title;
+    findOneResponseDto.author = book.author;
+    findOneResponseDto.publisher = book.publisher;
+    findOneResponseDto.cover_image = book.cover_image;
+    findOneResponseDto.book_category = book.book_category;
+    findOneResponseDto.requester_id = book.requester_id;
+    findOneResponseDto.requester_name = requester.name;
+
+    return findOneResponseDto;
+  }
+
   //   update(id
   // :
   //   number, updateBookDto;
