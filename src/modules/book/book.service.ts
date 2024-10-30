@@ -129,12 +129,25 @@ export class BookService {
       findAllResponseDto.cover_image = book.cover_image;
       findAllResponseDto.book_category = book.book_category;
       findAllResponseDto.requester_id = book.requester_id;
+      findAllResponseDto.book_status = book.book_status;
 
-      // 사용자 정보 가져오기
+      // 구매 요청자 정보
       const requester = await this.userService.findOne({
         id: Number(book.requester_id),
       });
       findAllResponseDto.requester_name = requester.name;
+
+      // 도서 대여자 정보
+      findAllResponseDto.borrower_id = book.borrower_id;
+      // borrower_id가 null인지 확인 및 이름 확인
+      if (book.borrower_id !== null) {
+        const borrower = await this.userService.findOne({
+          id: Number(book.borrower_id),
+        });
+        findAllResponseDto.borrower_name = borrower.name;
+      } else {
+        findAllResponseDto.borrower_name = null;
+      }
 
       return findAllResponseDto;
     });
