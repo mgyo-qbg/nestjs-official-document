@@ -35,4 +35,7 @@ export class FindOneResponseDto {
   @IsString()
   @IsNotEmpty()
   requester_name;
+
+  @IsNotEmpty()
+  book_status;
 }

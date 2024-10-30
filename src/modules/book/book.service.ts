@@ -171,6 +171,7 @@ export class BookService {
     findOneResponseDto.book_category = book.book_category;
     findOneResponseDto.requester_id = book.requester_id;
     findOneResponseDto.requester_name = requester.name;
+    findOneResponseDto.book_status = book.book_status;
 
     return findOneResponseDto;
   }
