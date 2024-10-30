@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { UserService } from '../user/user.service';
-import { RegisterBookRequestDto } from './dto/RegisterBookRequest.dto';
+import { RegisterBookRequestDto } from './dto/registerBookRequest.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
 
@@ -49,11 +49,11 @@ export class BookController {
     return this.bookService.registerBook(registerBookRequestDto, userId);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.bookService.findAll();
-  // }
-  //
+  @Get('all')
+  findAll() {
+    return this.bookService.findAll();
+  }
+
   // @Get(':id')
   // findOne(@Param('id') id: string) {
   //   return this.bookService.findOne(+id);
