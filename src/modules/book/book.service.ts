@@ -14,10 +14,18 @@ import { RegisterBookResponseDto } from './dto/registerBookResponse.dto';
 import { SearchBooksItemResponseDto } from './dto/searchBooksItemResponse.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { BookOrderLogService } from '../book-order-log/book-order-log.service';
-import { Book, BookOrderLogWorkName, Prisma } from '@prisma/client';
+import { BookRentalLogService } from '../book-rental-log/book-rental-log.service';
+import {
+  Book,
+  BookOrderLogWorkName,
+  BookRentalLogWorkName,
+  BookStatus,
+  Prisma,
+} from '@prisma/client';
 import { UserService } from '../user/user.service';
 import { FindAllResponseDto } from './dto/findAllResponse.dto';
 import { FindOneResponseDto } from './dto/findOneResponse.dto';
+import { UpdateBookStatusResponseDto } from './dto/updateBookStatusResponse.dto';
 
 @Injectable()
 export class BookService {
@@ -26,6 +34,7 @@ export class BookService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly bookOrderLogService: BookOrderLogService,
+    private readonly bookRentalLogService: BookRentalLogService,
     private readonly userService: UserService,
   ) {}
 
@@ -129,12 +138,25 @@ export class BookService {
       findAllResponseDto.cover_image = book.cover_image;
       findAllResponseDto.book_category = book.book_category;
       findAllResponseDto.requester_id = book.requester_id;
+      findAllResponseDto.book_status = book.book_status;
 
-      // 사용자 정보 가져오기
+      // 구매 요청자 정보
       const requester = await this.userService.findOne({
         id: Number(book.requester_id),
       });
       findAllResponseDto.requester_name = requester.name;
+
+      // 도서 대여자 정보
+      findAllResponseDto.borrower_id = book.borrower_id;
+      // borrower_id가 null인지 확인 및 이름 확인
+      if (book.borrower_id !== null) {
+        const borrower = await this.userService.findOne({
+          id: Number(book.borrower_id),
+        });
+        findAllResponseDto.borrower_name = borrower.name;
+      } else {
+        findAllResponseDto.borrower_name = null;
+      }
 
       return findAllResponseDto;
     });
@@ -171,25 +193,110 @@ export class BookService {
     findOneResponseDto.book_category = book.book_category;
     findOneResponseDto.requester_id = book.requester_id;
     findOneResponseDto.requester_name = requester.name;
+    findOneResponseDto.book_status = book.book_status;
+    findOneResponseDto.borrower_id = book.borrower_id;
+
+    // 도서 대여자 정보
+    findOneResponseDto.borrower_id = book.borrower_id;
+    // borrower_id가 null인지 확인 및 이름 확인
+    if (book.borrower_id !== null) {
+      const borrower = await this.userService.findOne({
+        id: Number(book.borrower_id),
+      });
+      findOneResponseDto.borrower_name = borrower.name;
+    } else {
+      findOneResponseDto.borrower_name = null;
+    }
 
     return findOneResponseDto;
   }
 
-  //   update(id
-  // :
-  //   number, updateBookDto;
-  // :
-  //   UpdateBookDto;
-  // )
-  //   {
-  //     return `This action updates a #${id} book`;
-  //   }
-  //
-  //   remove(id
-  // :
-  //   number;
-  // )
-  //   {
-  //     return `This action removes a #${id} book`;
-  //   }
+  async updateBookStatus({
+    where,
+    data,
+    userId,
+  }: {
+    where: { id: number };
+    data: { book_status: BookStatus };
+    userId: number; // userId를 매개변수로 추가
+  }) {
+    // 도서 정보 조회
+    const book = await this.findOne(where);
+
+    // 도서 상태 업데이트
+    const updatedBook = await this.prisma.book.update({
+      where,
+      data: {
+        book_status: data.book_status,
+      },
+    });
+
+    // borrower 정보를 업데이트하는 별도의 메서드 호출
+    await this.updateBorrowerInfo(book, updatedBook, userId);
+
+    // 응답 DTO 매핑
+    const updateBookStatusResponseDto = new UpdateBookStatusResponseDto();
+    updateBookStatusResponseDto.id = updatedBook.id;
+    updateBookStatusResponseDto.isbn = updatedBook.isbn;
+    updateBookStatusResponseDto.title = updatedBook.title;
+    updateBookStatusResponseDto.author = updatedBook.author;
+    updateBookStatusResponseDto.publisher = updatedBook.publisher;
+    updateBookStatusResponseDto.cover_image = updatedBook.cover_image;
+    updateBookStatusResponseDto.book_category = updatedBook.book_category;
+    updateBookStatusResponseDto.requester_id = book.requester_id; // 원래 요청자 정보
+    updateBookStatusResponseDto.requester_name = book.requester_name; // 원래 요청자 이름
+    updateBookStatusResponseDto.borrower_id = updatedBook.borrower_id; // 업데이트된 대여자 정보
+    updateBookStatusResponseDto.book_status = updatedBook.book_status; // 업데이트된 도서 상태
+
+    // borrower_id가 null인지 확인 및 이름 확인
+    if (book.borrower_id !== null) {
+      const borrower = await this.userService.findOne({
+        id: Number(book.borrower_id),
+      });
+      updateBookStatusResponseDto.borrower_name = borrower.name;
+    } else {
+      updateBookStatusResponseDto.borrower_name = null;
+    }
+    return updateBookStatusResponseDto; // 업데이트된 도서 정보를 반환
+  }
+
+  // borrower 정보를 업데이트하는 별도의 메서드
+  private async updateBorrowerInfo(
+    book: FindOneResponseDto,
+    updatedBook: Book, // 업데이트된 도서 정보
+    userId: number, // 사용자 ID
+  ) {
+    // 상태에 따른 borrower 정보 업데이트 로직
+    if (updatedBook.book_status === BookStatus.UNRENTABLE) {
+      // const requester = await this.userService.findOne({ id: userId });
+      await this.prisma.book.update({
+        where: { id: updatedBook.id },
+        data: {
+          borrower_id: userId,
+        },
+      });
+      // CHANGE_BOOK_STATUS_TO_UNRENTABLE 에 대한 BookOrderLog 로그 추가
+      await this.bookRentalLogService.InsertBookRentalLog(
+        userId,
+        BookRentalLogWorkName.CHANGE_BOOK_STATUS_TO_UNRENTABLE,
+        updatedBook.id,
+      );
+    } else if (updatedBook.book_status === BookStatus.RENTABLE) {
+      // 기존 borrower 정보가 있을 경우 제거
+      if (book.borrower_id) {
+        await this.prisma.book.update({
+          where: { id: updatedBook.id },
+          data: {
+            borrower_id: null,
+          },
+        });
+      }
+      // CHANGE_BOOK_STATUS_TO_RENTABLE 에 대한 BookOrderLog 로그 추가
+      await this.bookRentalLogService.InsertBookRentalLog(
+        userId,
+        BookRentalLogWorkName.CHANGE_BOOK_STATUS_TO_RENTABLE,
+        updatedBook.id,
+      );
+    }
+  }
 }

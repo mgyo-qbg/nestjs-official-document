@@ -22,7 +22,6 @@ enum BookStatus {
   // 도서 상태
   REQUEST_BUY // 구매요청
   DELIVERING // 배송중
-  ARRIVED // 배송도착
   RENTABLE // 대여 가능
   UNRENTABLE // 대여 불가능
 }
@@ -37,7 +36,6 @@ enum BookOrderLogWorkName {
   // 도서 주문 관련 작업명
   CHANGE_BOOK_STATUS_TO_REQUEST_BUY // 구매요청 상태로 변경
   CHANGE_BOOK_STATUS_TO_DELIVERING // 배송중 상태로 변경
-  CHANGE_BOOK_STATUS_TO_ARRIVED // 배송도착 상태로 변경
 }
 
 enum UserWorkName {

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { BookCategory } from '@prisma/client';
+import { BookCategory, BookStatus } from '@prisma/client';
 
 export class FindAllResponseDto {
   @IsNumber()
@@ -30,9 +30,18 @@ export class FindAllResponseDto {
 
   @IsString()
   @IsNotEmpty()
-  requester_id;
+  requester_id: number;
 
   @IsString()
   @IsNotEmpty()
-  requester_name;
+  requester_name: string;
+
+  @IsString()
+  borrower_id: number;
+
+  @IsString()
+  borrower_name: string;
+
+  @IsNotEmpty()
+  book_status: BookStatus;
 }

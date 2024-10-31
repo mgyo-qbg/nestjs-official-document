@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { BookCategory, BookStatus } from '@prisma/client';
 
-export class FindOneResponseDto {
+export class UpdateBookStatusResponseDto {
   @IsNumber()
   @IsNotEmpty()
   id: number;
