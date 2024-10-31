@@ -17,8 +17,8 @@ async function bootstrap() {
 
   // Swagger 설정
   const config = new DocumentBuilder()
-    .setTitle('Your API Title') // API 제목
-    .setDescription('Your API Description') // API 설명
+    .setTitle('MinGyoKim QB') // API 제목
+    .setDescription('Onboarding') // API 설명
     .setVersion('1.0') // API 버전
     .addTag('tags') // 태그 추가 (선택 사항)
     .build();
