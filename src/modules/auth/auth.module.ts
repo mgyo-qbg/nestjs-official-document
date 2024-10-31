@@ -16,7 +16,7 @@ import { UserLogService } from '../user-log/user-log.service';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '1d' }, // 토큰 유효기간 1시간(86400s)
+        signOptions: { expiresIn: '7d' }, // 토큰 유효기간 1시간(86400s), 임의로 7d 로 잡음.
       }),
     }),
     UserModule,
