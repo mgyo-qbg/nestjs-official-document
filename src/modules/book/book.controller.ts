@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Logger,
   Query,
   UseGuards,
@@ -16,6 +15,7 @@ import { UserService } from '../user/user.service';
 import { RegisterBookRequestDto } from './dto/registerBookRequest.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
+import { UpdateBookStatusRequestDto } from './dto/updateBookStatusRequest.dto';
 
 // JWT에서 사용자 정보 타입 정의
 interface User {
@@ -61,14 +61,17 @@ export class BookController {
     });
   }
 
-  //
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
-  //   return this.bookService.update(+id, updateBookDto);
-  // }
-  //
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.bookService.remove(+id);
-  // }
+  @Patch(':id')
+  updateBookStatus(
+    @Param('id') id: string,
+    @Body() updateBookStatusRequestDto: UpdateBookStatusRequestDto,
+    @Request() req: AuthRequest, // AuthRequest 타입을 사용하여 JWT 페이로드에서 user 정보 추출
+  ) {
+    const userId = req.user.id; // 사용자 ID 추출
+    return this.bookService.updateBookStatus({
+      where: { id: Number(id) },
+      data: updateBookStatusRequestDto,
+      userId,
+    });
+  }
 }

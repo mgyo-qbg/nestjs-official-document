@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
 import { BookModule } from './modules/book/book.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BookRentalLogService } from './modules/book-rental-log/book-rental-log.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { AuthModule } from './modules/auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, BookRentalLogService],
 })
 export class AppModule {}
