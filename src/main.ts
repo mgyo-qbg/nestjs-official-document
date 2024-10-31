@@ -6,6 +6,13 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // CORS 활성화
+  app.enableCors({
+    origin: 'http://localhost:3001', // React 앱의 주소
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // 쿠키 전송 허용 (필요시)
+  });
+
   // ValidationPipe 전역 적용
   app.useGlobalPipes(
     new ValidationPipe({
