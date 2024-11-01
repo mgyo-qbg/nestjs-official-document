@@ -6,7 +6,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS 활성화
+  // CORS 설정
   app.enableCors({
     origin: 'http://localhost:3001', // React 앱의 주소
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
